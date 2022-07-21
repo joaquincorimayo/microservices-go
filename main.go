@@ -1,31 +1,28 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
-type Product struct {
-	Id int `json:"id" xml:"Id" yaml:"id"`
-	Name string `json:"name" xml:"Name" yaml:"name"`
+type PrintJob struct {
+	JobId int `json:"jobId" binding:"required,gte=10000"`
+	Pages int `json:"pages" binding:"required,gte=1,lte=100"`
 }
 
 func main () {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
-	router.GET("/productJSON", func(c *gin.Context) {
-		product := Product{1, "Apple"}
-		c.JSON(200, product)
-	})
+	router.POST("/print",func(c *gin.Context) {
+		var p PrintJob
 
-	router.GET("/productXML", func(c *gin.Context) {
-		product := Product{2, "Banana"}
-		c.XML(200, product)
-	})
-
-	router.GET("/productYAML", func(c *gin.Context) {
-		product := Product{3, "Mango"}
-		c.XML(200, product)
+		if err := c.ShouldBindJSON(&p); err != nil {
+			c.JSON(400, gin.H{"error":"Invalid input!"})
+			return
+		}
+		c.JSON(200, gin.H{"message":
+			fmt.Sprintf("PrintJob #%v started!", p.JobId)})
 	})
 
 	// Start the http server instance
