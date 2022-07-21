@@ -1,25 +1,22 @@
 package main
 
 import (
+	"fmt"
+	"strconv"
 	"github.com/gin-gonic/gin"
 )
 
-// Generic endpoint handler
-func endpointHandler(c *gin.Context) {
-	c.String(200, "%s %s", c.Request.Method, c.Request.URL.Path)
+func add(c *gin.Context) {
+	x, _ := strconv.ParseFloat(c.Param("x"), 64)
+	y, _ := strconv.ParseFloat(c.Param("y"), 64)
+	c.String(200, fmt.Sprintf("%f", x+y))
 }
 
 func main () {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
-	// router := gin.New()
-	// router.Use(gin.Logger())
 
-	router.GET("/products", endpointHandler)
-	router.GET("/products/:productId", endpointHandler)
-	router.POST("/products",endpointHandler)
-	router.PUT("/products/:productId", endpointHandler)
-	router.DELETE("/products/:productId", endpointHandler)
+	router.GET("/add/:x/:y", add)
 
 	// Start the http server instance
 	router.Run(":5000")
