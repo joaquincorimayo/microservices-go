@@ -3,25 +3,34 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"log"
+	"time"
+	"math/rand"
 )
 
-// custom middleware intercepts and prints the User-Agent header's value for each HTTP request
-func FindUserAgent() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		log.Println(c.GetHeader("User-Agent"))
-		c.Next()
-	}
+type PrintJob struct {
+	Format string `json:"format" binding:"required"`
+	InvoiceId int `json:"invoiceId" binding:"required,gte=0"`
+	JobId int `json:"jobId" binding:"gte=0"`
 }
+
 
 func main () {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
-	router.Use(FindUserAgent())
-	router.GET("/", func(c *gin.Context){
-		c.JSON(200, gin.H{"message":"Middleware works!"})
+	router.POST("/print-jobs", func(c *gin.Context) {
+		var p PrintJob
+
+		if err:=c.ShouldBindJSON(&p); err != nil {
+			c.JSON(400, gin.H{"error":"Invalid input!"})
+			return
+		}
+		log.Printf("PrintService: creating new print job from invoice #%v...", p.InvoiceId)
+		rand.Seed(time.Now().UnixNano())
+		p.JobId = rand.Intn(1000)
+		log.Printf("PrintService: created print job #%v", p.JobId)
+		c.JSON(200, p)
 	})
 
-	// Start the http server instance
 	router.Run(":5000")
 }
